@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clique</title>
+</head>
+    <button>Clique</button>
+<body>
+    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:4000');
+
+        socket.on('msg', (data) => console.log(data));
+
+        document.querySelector('button').addEventListener('click', function(){
+            socket.emit('createGame', {
+                idRoom: "1234"
+            });
+        })
+    </script>
+</body>
+
+</html>
