@@ -17,7 +17,9 @@
 
         document.querySelector('button').addEventListener('click', function(){
             socket.emit('createGame', {
-                idRoom: "1234"
+                idRoom: 1234,
+                playerName: 'Maxwell',
+                numPlayers: 2
             });
         })
     </script>

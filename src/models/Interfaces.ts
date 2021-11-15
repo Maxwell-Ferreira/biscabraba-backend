@@ -15,3 +15,8 @@ export interface createProps{
     playerName: string,
     numPlayers: number
 }
+
+export interface enterProps{
+    idRoom: string,
+    playerName: string
+}

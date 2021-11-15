@@ -1,99 +1,121 @@
 import { Socket } from 'socket.io';
 import Game from './models/Game';
-import { createProps } from './models/Interfaces';
-import { stringSize } from './Utils';
+import Player from './models/Player';
 
-
-declare type Teste = {
-    idRoom: string,
-    playerName: string,
-    numPlayers: number
-}
+import { createProps, enterProps } from './models/Interfaces';
+import { emitError, findGameIndex, findGame, findGameIndexByPlayerId } from './Utils';
+import { stringSize, verifyDataCreate, verifyDataEnter, verifyPlay } from './Validate';
 
 function App(io: any) {
-    //const Helper = require('./Helper.js');
 
-    var games: Array<Game> = [];
+    let games: Array<Game> = [];
 
     io.on('connection', function (socket: Socket) {
         console.log(`Socket connected -> id:${socket.id}`);
 
-        socket.on('createGame', function(req: Teste) {
+        //Event that a player tries to create a new game
+        socket.on('createGame', function (props) {
 
-            const data: createProps = req;
+            const data = <createProps>props;
 
-            if (stringSize([data.playerName], 4, 0) && stringSize([data.idRoom], 4) && data && data.idRoom && data.numPlayers && data.playerName) {
-
-                let gameExist = games.find(game => game.getId() === data.idRoom);
-
-                if (!gameExist) {
+            if (verifyDataCreate(data)) {
+                if (!findGame(games, data.idRoom)) {
 
                     socket.join(data.idRoom);
 
-                    let newGame: Game = new Game(data.idRoom, data.numPlayers);
+                    const newGame: Game = new Game(data.idRoom, data.numPlayers);
 
                     games.push(newGame);
 
                     socket.emit('msg', 'Jogo criado.');
 
-                    console.log(games);
+                } else {
+                    emitError(socket, 'Já existe uma sala com este ID.');
+                }
+
+            } else {
+                emitError(socket, 'Dados inválidos.');
+            }
+        });
+
+        //Event that a new player tries to enter in a room
+        socket.on('enterRoom', (props) => {
+            const data = <enterProps>props;
+
+            if (verifyDataEnter(data)) {
+
+                const gameIndex = findGameIndex(games, data.idRoom);
+
+                if (gameIndex !== -1) {
+                    const player = new Player(socket.id, data.playerName, data.idRoom);
+                    const game = games[gameIndex];
+
+                    game.addNewPlayer(player);
+                    games[gameIndex] = game;
+
+                    socket.join(game.getId());
+                    socket.emit('playerData', player);
+
+                    socket.broadcast.to(data.idRoom).emit('newPlayer', player.getPublicData());
+                } else {
+                    emitError(socket, 'Socket não conectado à nenhuma sala.');
+                }
+            }
+            else {
+                emitError(socket, 'Dados inválidos.');
+            }
+        });
+
+        socket.on('gameInitialize', () => {
+            const gameIndex = findGameIndexByPlayerId(games, socket.id);
+
+            if (gameIndex !== -1) {
+                const game = games[gameIndex];
+
+                if (game.initialize()) {
+                    for (let player of game.getPlayers()) {
+                        io.to(player.getId()).emit('updateGameData', game.getPublicData(player.getId()));
+                    }
+
+                    games[gameIndex] = game;
+                } else {
+                    emitError(socket, 'Ainda faltam jogadores para a partida ser iniciada.');
+                }
+            } else {
+                emitError(socket, 'Socket não conectado à nenhuma sala.');
+            }
+        })
+
+        //Event that a player tries to play a card
+        socket.on('playCard', (play) => {
+            if (verifyPlay(play)) {
+                const gameIndex = findGameIndexByPlayerId(games, socket.id);
+
+                if (gameIndex !== -1) {
+                    const game = games[gameIndex];
+
+                    const playResult = game.playCard(play, socket.id);
+
+                    if(playResult === true){
+                        
+                        for (let player of game.getPlayers()) {
+                            io.to(player.getId()).emit('updateGameData', game.getPublicData(player.getId()));
+                        }
+
+                        game.verifyRoundCompleted();
+
+                        games[gameIndex] = game;
+                    }
 
                 } else {
-                    socket.emit('msg', { type: 'error', text: 'Esta sala já existe.' })
-                }
-
-            } else {
-                socket.emit('msg', { type: 'error', text: 'Preencha os campos corretamente.' })
-            }
-
-
-            /* var verificacao = helper.verificarCriar(dados, jogos, socket.id);
-            if (verificacao.result) {
-                socket.join(dados.idSala);
-                socket.sala = dados.idSala;
-                jogos[socket.sala] = verificacao.resposta;
-                console.log('iniciou a partida')
-                socket.emit(verificacao.emit, verificacao.resposta.jogadores);
-            } else {
-                socket.emit(verificacao.emit, verificacao.resposta);
-            } */
-        });
-
-        /* socket.on('entrarSala', (dados) => {
-            var verificacao = helper.verificarEntrar(dados, jogos, socket.id);
-            if (verificacao.result) {
-                socket.join(dados.idSala);
-                socket.sala = dados.idSala;
-                jogos[socket.sala] = verificacao.resposta;
-                socket.emit(verificacao.emit, jogos[socket.sala].jogadores);
-    
-                var player = jogos[socket.sala].jogadores[socket.id];
-                socket.broadcast.to(dados.idSala).emit("novoJogador", { player });
-            } else {
-                socket.emit(verificacao.emit, verificacao.resposta);
-            }
-    
-        });
-    
-        socket.on('iniciarPartida', () => {
-            var verificacao = helper.verificarIniciar(jogos[socket.sala], socket.id);
-            if (verificacao.result) {
-                jogos[socket.sala] = verificacao.resposta.jogo;
-    
-                for (var j in jogos[socket.sala].jogadores) {
-                    var dados = {
-                        jogador: jogos[socket.sala].jogadores[j],
-                        jogoEstado: jogos[socket.sala].getState(),
-                        times: verificacao.resposta.times,
-                        turnoJogador: verificacao.resposta.turnoJogador.nome
-                    };
-                    io.to(jogos[socket.sala].jogadores[j].id).emit(verificacao.emit, dados);
+                    emitError(socket, 'Socket não conectado à nenhuma sala.');
                 }
             } else {
-                socket.emit(verificacao.emit, verificacao.resposta);
+                emitError(socket, 'Dados inválidos.');
             }
-        });
-    
+        })
+
+        /* 
         socket.on('jogarCarta', (jogada) => {
             verificacao = helper.verificarJogar(jogada, jogos[socket.sala], socket.id);
             if (verificacao.result) {
@@ -137,32 +159,41 @@ function App(io: any) {
             }
         });
     
-        socket.on('mensagem', mensagem => {
-            if (typeof socket.sala !== "undefined") {
-                if (typeof mensagem === "string") {
-                    if (mensagem.length <= 255 && mensagem.length > 0) {
-                        var jogador = jogos[socket.sala].jogadores[socket.id];
-                        io.to(socket.sala).emit("mensagem", { jogador: jogador.nome, texto: mensagem });
+        */
+        socket.on('message', message => {
+            const gameIndex = findGameIndexByPlayerId(games, socket.id);
+
+            if (gameIndex !== -1) {
+                const player = games[gameIndex].getPlayerById(socket.id);
+                if (typeof message === 'string' && stringSize([message], 255) && stringSize([message], 0, 0)) {
+
+                    const messageObject = {
+                        playerName: player?.getName(),
+                        text: message
                     }
+
+                    io.to(player?.getRoom()).emit('message', messageObject);
                 }
             }
         });
-    
+
         socket.on('disconnect', () => {
-            if (typeof socket.sala !== "undefined") {
-                if (typeof jogos[socket.sala] !== "undefined") {
-                    if (jogos[socket.sala].status || Object.keys(jogos[socket.sala].jogadores).length == 1) {
-                        io.to(socket.sala).emit("desconexao", `${jogos[socket.sala].jogadores[socket.id].nome} se desconectou! A partida foi encerrada :(`);
-                        delete jogos[socket.sala];
-                    } else {
-                        io.to(jogos[socket.sala].id).emit("removerJogador", jogos[socket.sala].jogadores[socket.id].nome);
-                        delete jogos[socket.sala].jogadores[socket.id];
-                    }
+            const gameIndex = findGameIndexByPlayerId(games, socket.id);
+
+            if (gameIndex !== -1) {
+                const game = games[gameIndex];
+
+                if (game.getStatus() || game.getPlayers().length === 1) {
+                    io.to(game.getId()).emit('playerDisconnected', `${game.getPlayerById(socket.id)} foi desconectado! A partida foi encerrada.`);
+                    games.slice(gameIndex, 1);
+                } else {
+                    io.to(game.getId()).emit('removePlayer', game.getPlayerById(socket.id)?.getName());
+                    games.slice(gameIndex, 1);
                 }
             }
-    
-            console.log(`Socket desconectado -> id: ${socket.id}`);
-        }) */
+
+            console.log(`Socket disconnected -> id: ${socket.id}`);
+        });
     });;
 }
 
