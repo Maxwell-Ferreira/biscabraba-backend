@@ -104,6 +104,16 @@ function App(io: any) {
 
                         game.verifyRoundCompleted();
 
+                        for (let player of game.getPlayers()) {
+                            io.to(player.getId()).emit('updateGameData', game.getPublicData(player.getId()));
+                        }
+
+                        if(game.end()){
+                            let winnerTeam = game.getWinner();
+
+                            io.to(game.getId()).emit("winnerTeam", winnerTeam);
+                        }
+
                         games[gameIndex] = game;
                     }
 
@@ -115,51 +125,6 @@ function App(io: any) {
             }
         })
 
-        /* 
-        socket.on('jogarCarta', (jogada) => {
-            verificacao = helper.verificarJogar(jogada, jogos[socket.sala], socket.id);
-            if (verificacao.result) {
-                var jogo = verificacao.resposta;
-                jogos[socket.sala] = jogo;
-    
-                socket.emit('removerCartaMao', jogada);
-    
-                socket.broadcast.to(jogo.id).emit("removerCartaAdversario");
-                io.to(jogo.id).emit(verificacao.emit, jogo.jogadores[socket.id].jogada);
-                io.to(jogo.id).emit("jogadorTurno", jogo.jogadores[jogo.turno].nome);
-    
-                var pronto = helper.pronto(jogos[socket.sala]);
-                if (pronto.result) {
-                    jogos[socket.sala] = pronto.resposta;
-                    if (jogos[socket.sala].baralho.length > 0) {
-                        jogos[socket.sala].comprarCartas();
-                    }
-    
-                    var acabaramCartas = true;
-                    for (var j in jogos[socket.sala].jogadores) {
-                        if (jogos[socket.sala].jogadores[j].mao.length > 0) {
-                            acabaramCartas = false;
-                            break;
-                        }
-                    }
-    
-                    for (var j in jogos[socket.sala].jogadores) {
-                        io.to(jogos[socket.sala].jogadores[j].id).emit(pronto.emit, jogos[socket.sala].jogadores[j]);
-                    }
-    
-                    if (acabaramCartas) {
-                        var vencedor = helper.getVencedorPartida(jogos[socket.sala]);
-                        io.to(socket.sala).emit("vencedor", vencedor);
-                    }
-    
-                    io.to(jogo.id).emit("jogadorTurno", jogos[socket.sala].jogadores[jogos[socket.sala].turno].nome);
-                }
-            } else {
-                socket.emit(verificacao.emit, verificacao.resposta);
-            }
-        });
-    
-        */
         socket.on('message', message => {
             const gameIndex = findGameIndexByPlayerId(games, socket.id);
 
