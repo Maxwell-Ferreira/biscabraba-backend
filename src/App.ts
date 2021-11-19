@@ -27,7 +27,7 @@ function App(io: any) {
 
                     games.push(newGame);
 
-                    socket.emit('msg', 'Jogo criado.');
+                    socket.emit('createGame', 'Jogo criado.');
 
                 } else {
                     emitError(socket, 'Já existe uma sala com este ID.');

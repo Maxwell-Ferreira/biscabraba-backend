@@ -25,7 +25,7 @@ export function verifyDataCreate(data: any) {
         typeof data.numPlayers === 'number' &&
         [2, 4].includes(data.numPlayers) &&
         stringSize([data.playerName], 4, 0) &&
-        stringSize([data.idRoom], 4)
+        stringSize([data.idRoom], 12)
     )
         return true;
     return false;
