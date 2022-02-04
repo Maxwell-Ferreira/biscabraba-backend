@@ -66,7 +66,8 @@ function App(io: any) {
                         games[gameIndex] = game;
     
                         socket.join(game.getId());
-                        socket.emit('playerData', player);
+
+                        socket.emit('enterRoom', game.getPlayersPublicData());
     
                         socket.broadcast.to(data.idRoom).emit('newPlayer', player.getPublicData());
                     }
@@ -156,7 +157,7 @@ function App(io: any) {
         if (gameIndex !== -1) {
             const game = games[gameIndex];
 
-            if (game.getStatus() || game.getPlayers().length === 1) {
+            if (game.getStatus() || game.getActualNumPlayers() === 1) {
                 io.to(game.getId()).emit('playerDisconnected', `${game.getPlayerById(socket.id)} foi desconectado! A partida foi encerrada.`);
                 games.slice(gameIndex, 1);
             } else {

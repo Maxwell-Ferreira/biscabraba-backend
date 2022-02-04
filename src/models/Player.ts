@@ -2,6 +2,7 @@ import { Card, PlayerPublicData } from "./Interfaces";
 
 export default class Player{
     private id: string;
+    private publicId: number;
     private name: string;
     private room: string;
     private hand: Array<Card> = [];
@@ -14,6 +15,7 @@ export default class Player{
         this.id = id;
         this.name = name;
         this.room = room;
+        this.publicId = new Date().getTime();
     }
 
     public getId():string{
@@ -34,6 +36,7 @@ export default class Player{
 
     public getPublicData():PlayerPublicData{
         return {
+            publicId: this.publicId,
             name: this.name,
             points: this.points,
             team: this.team

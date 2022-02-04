@@ -1,4 +1,5 @@
 export interface PlayerPublicData{
+    publicId: number,
     name: string,
     points: number,
     team: number,
