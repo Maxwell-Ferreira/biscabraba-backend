@@ -1,10 +1,4 @@
-import { Card } from "./Interfaces";
-
-interface PlayerPublicData{
-    name: string,
-    points: number,
-    team: number,
-};
+import { Card, PlayerPublicData } from "./Interfaces";
 
 export default class Player{
     private id: string;

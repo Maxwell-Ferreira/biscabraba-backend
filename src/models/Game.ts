@@ -1,5 +1,5 @@
 import { getRandomInt } from "../Utils";
-import { Card, Message } from "./Interfaces";
+import { Card, Message, PlayerPublicData } from "./Interfaces";
 import Player from "./Player";
 
 export default class Game {
@@ -73,6 +73,18 @@ export default class Game {
 
     public getPlayers(): Array<Player> {
         return this.players;
+    }
+
+    public getNumPlayers(): number {
+        return this.numPlayers;
+    }
+
+    public getActualNumPlayers(): number {
+        return this.players.length;
+    }
+
+    public getPlayersPublicData(): Array<PlayerPublicData> {
+        return this.getPlayers().map(player => player.getPublicData())
     }
 
     public getPlayerById(id: string): Player | null {

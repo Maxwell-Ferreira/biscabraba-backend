@@ -39,7 +39,7 @@ export function verifyDataEnter(data: any) {
         typeof data.idRoom === 'string' &&
         typeof data.playerName === 'string' &&
         stringSize([data.playerName], 4, 0) &&
-        stringSize([data.idRoom], 4)
+        stringSize([data.idRoom], 12)
     )
         return true;
     return false;

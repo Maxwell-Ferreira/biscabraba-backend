@@ -1,3 +1,9 @@
+export interface PlayerPublicData{
+    name: string,
+    points: number,
+    team: number,
+};
+
 export interface Card{
     name: string,
     naipe: string,
