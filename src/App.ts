@@ -158,11 +158,14 @@ function App(io: any) {
             const game = games[gameIndex];
 
             if (game.getStatus() || game.getActualNumPlayers() === 1) {
-                io.to(game.getId()).emit('playerDisconnected', `${game.getPlayerById(socket.id)} foi desconectado! A partida foi encerrada.`);
-                games.slice(gameIndex, 1);
+                io.to(game.getId()).emit('playerDisconnected', `${game.getPlayerById(socket.id)?.getName()} foi desconectado! A partida foi encerrada.`);
+                games.splice(gameIndex, 1);
+                console.log(`${game.getPlayerById(socket.id)?.getName()} foi desconectado! A partida foi encerrada.`)
+
+                console.log(games[gameIndex]);
             } else {
                 io.to(game.getId()).emit('removePlayer', game.getPlayerById(socket.id)?.getName());
-                games.slice(gameIndex, 1);
+                games.splice(gameIndex, 1);
             }
         }
 
