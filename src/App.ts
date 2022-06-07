@@ -29,7 +29,7 @@ function App(io: any) {
 
                     games.push(newGame);
 
-                    socket.emit('createGame', player.getPublicData());
+                    socket.emit('createGame', newGame.getPublicData(socket.id));
 
                 } else {
                     emitError(socket, 'Já existe uma sala com este ID.');
@@ -67,9 +67,11 @@ function App(io: any) {
     
                         socket.join(game.getId());
 
-                        socket.emit('enterRoom', game.getPlayersPublicData());
-    
-                        socket.broadcast.to(data.idRoom).emit('newPlayer', player.getPublicData());
+                        socket.emit('enterRoom', game.getPublicData(socket.id));
+
+                        game.getPlayers().forEach(player => {
+                            io.sockets[player.getId()].emit('newPlayer', game.getPublicData(player.getId()))
+                        });
                     }
                 }
             }
