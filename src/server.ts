@@ -11,9 +11,6 @@ const io = require('socket.io')(server, {
   }
 });
 
-console.log(process.env.CORS_ORIGIN);
-
-
 app.use(express.static(path.join(__dirname, '../public')));
 app.set('views', path.join(__dirname, '../public'));
 app.engine('html', require('ejs').renderFile);

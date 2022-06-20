@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "start": "ts-node src/server.ts",
     "dev": "ts-node-dev --inspect --ignore-watch node_modules src/server.ts"
   },
   "devDependencies": {
