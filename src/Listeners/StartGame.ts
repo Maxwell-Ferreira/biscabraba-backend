@@ -10,7 +10,8 @@ const startGame = async (io:any, socket:Socket, games:Array<Game>) => {
   if (!game.initialize()) { return emitError(socket, 'Ainda faltam jogadores para a partida ser iniciada.'); }
 
   game.getPlayers().forEach(player => {
-    io.to(player.getId()).emit('updateGameData', game.getPublicData(player.getId()));
+    game.getPublicData(player.getId());
+    io.to(player.getId()).emit('startGame', game.getPublicData(player.getId()));
   });
 
   games[gameIndex] = game;

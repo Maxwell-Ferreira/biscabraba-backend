@@ -1,3 +1,4 @@
+import { isArray } from "lodash";
 import { Socket } from "socket.io";
 import Game from "./Models/Game";
 
@@ -13,8 +14,12 @@ export const findGameIndexByPlayerId = (games: Array<Game>, playerId: string) =>
   });
 }
 
-export function emitError(socket: Socket, msg: string) {
-  socket.emit('msg', { type: 'error', text: msg });
+export function emitError(socket: Socket, errors: Array<any>|string) {
+  if(isArray(errors)) {
+    socket.emit('error', errors);
+  } else {
+    socket.emit('error', [{ message: errors }]);
+  }
 }
 
 export const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min)) + min;

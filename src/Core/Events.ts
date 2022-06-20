@@ -11,7 +11,7 @@ import disconnect from "../Listeners/Disconnect";
 export default class Events {
   static register(io: any, socket: Socket, games: Array<Game>) {
     socket.on('createRoom', props => { createRoom(socket, games, props);    });
-    socket.on('enterRoom',  props => { enterRoom(io, socket, games, props); });
+    socket.on('enterRoom',  props => { enterRoom(socket, games, props); });
     socket.on('startGame',  ()    => { startGame(io, socket, games);        });
     socket.on('playCard',   props => { playCard(io, socket, games, props)   });
     socket.on('message',    props => { message(io, socket, games, props)    });
