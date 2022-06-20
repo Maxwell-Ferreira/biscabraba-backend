@@ -11,8 +11,14 @@ const io = require('socket.io')(server, {
   }
 });
 
-app.use(express.static(path.join(__dirname, '../public')));
-app.set('views', path.join(__dirname, '../public'));
+if(process.env.ENVIRONMENT === 'production') {
+  app.use(express.static(path.join(__dirname, '../../react_build')));
+  app.set('views', path.join(__dirname, '../../react_build'));
+}else {
+  app.use(express.static(path.join(__dirname, '../react_build')));
+  app.set('views', path.join(__dirname, '../react_build'));
+}
+
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
