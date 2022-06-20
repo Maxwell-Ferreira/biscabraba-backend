@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "ts-node src/server.ts",
+    "start": "ts-node src/server.js",
     "build": "tsc",
     "dev": "ts-node-dev --inspect --ignore-watch node_modules src/server.ts"
   },
