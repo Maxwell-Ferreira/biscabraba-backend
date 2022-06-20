@@ -1,0 +1,52 @@
+#room {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary);
+
+  display: flex;
+}
+
+#room #menu {
+  padding: 1rem 2rem;
+  padding-bottom: .4rem;
+  width: 250px;
+  background-color: var(--light);
+
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 1rem var(--dark);
+}
+
+#room #menu h2 {
+  text-align: center;
+  font-size: 2.4rem;
+}
+
+#room #menu button {
+  background-color: var(--primary-dark);
+  color: var(--light);
+  margin-top: auto;
+}
+
+#room #menu button:hover {
+  background-color: var(--seccondary-dark);
+  transition: .2s;
+}
+
+#room #menu #footer {
+  margin-top: 1rem;
+  text-align: center;
+  border-top: 1px solid var(--dark);
+}
+
+#room #menu #game-info {
+  margin-top: 2rem;
+}
+
+#room #menu #teams-info > div {
+  margin-top: 2rem;
+}
+
+#room #menu #teams-info h3 {
+  text-align: center;
+}
