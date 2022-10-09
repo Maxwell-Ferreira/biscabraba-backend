@@ -188,126 +188,36 @@ export default class Game {
   }
 
   private calculateRound() {
-    let iWinner:number = 0;
 
-    this.players.forEach((p1, i1) => {
-      this.players.forEach((p2, i2) => {
-        if (i1 !== i2) {
-          const p1Move = p1.getActualMove();
-          const p2Move = p2.getActualMove();
-          if (p1Move && p2Move) {
-            if (p1Move.naipe === p2Move.naipe) {
-              if (p1Move.order > p2Move.order) { iWinner = i1; }
-              else { iWinner = i2; }
-            }
-            else {
-              if (p1Move.naipe === this.trump) { iWinner = i1; }
-              else if (p2Move.naipe === this.trump) { iWinner = i2; }
-              else {
-                if (p1.getLastMoveTime() < p2.getLastMoveTime()) { iWinner = i1; }
-                else { iWinner = i2; }
-              }
-            }
-          }
+    const winner = this.players.reduce((prev, curr) => {
+      if (prev.getId() === curr.getId()) return curr;
+
+      const prevMove = prev.getActualMove();
+      const currMove = curr.getActualMove();
+
+      if (prevMove && currMove) {
+        if (prevMove.naipe === currMove.naipe) {
+          if (prevMove.order > currMove.order) return prev;
+          else return curr;
         }
-      });
-    });
-
-    let points = 0;
-    this.players.forEach(p => { points += (p.getActualMove()?.value || 0); });
-
-    this.players[iWinner].addPoints(points);
-    this.setTurn(this.players[iWinner].getPublicId());
-
-    /*         if (this.numPlayers === 2) {
-    
-                const cardPlayer1 = this.players[0].getActualMove()!;
-                const cardPlayer2 = this.players[1].getActualMove()!;
-    
-                if (cardPlayer1.naipe === cardPlayer2.naipe) {
-                    if (cardPlayer1.order > cardPlayer2.order) {
-                        this.players[0].setPoints(this.players[0].getPoints() + (cardPlayer1.value + cardPlayer2.value));
-                        this.setTurn(this.players[0].getId());
-                    } else {
-                        this.players[1].setPoints(this.players[1].getPoints() + (cardPlayer1.value + cardPlayer2.value));
-                        this.setTurn(this.players[1].getId());
-                    }
-                } else {
-                    if (cardPlayer1.naipe === this.trump) {
-                        this.players[0].setPoints(this.players[0].getPoints() + (cardPlayer1.value + cardPlayer2.value));
-                        this.setTurn(this.players[0].getId());
-                    } else if (cardPlayer2.naipe === this.trump) {
-                        this.players[1].setPoints(this.players[1].getPoints() + (cardPlayer1.value + cardPlayer2.value));
-                        this.setTurn(this.players[1].getId());
-                    } else {
-                        if (this.players[0].getId() === this.playerTurn) {
-                            this.players[0].setPoints(this.players[0].getPoints() + (cardPlayer1.value + cardPlayer2.value));
-                            this.setTurn(this.players[0].getId());
-                        } else {
-                            this.players[1].setPoints(this.players[1].getPoints() + (cardPlayer1.value + cardPlayer2.value));
-                            this.setTurn(this.players[1].getId());
-                        }
-                    }
-                }
-            } else if (this.numPlayers === 4) {
-    
-                const cardPlayer1 = this.players[0].getActualMove()!;
-                const cardPlayer2 = this.players[1].getActualMove()!;
-                const cardPlayer3 = this.players[2].getActualMove()!;
-                const cardPlayer4 = this.players[3].getActualMove()!;
-    
-                if (cardPlayer1.naipe === cardPlayer2.naipe && cardPlayer1.naipe === cardPlayer3.naipe && cardPlayer1.naipe === cardPlayer4.naipe) {
-                    if (cardPlayer1.order > cardPlayer2.order && cardPlayer1.order > cardPlayer3.order && cardPlayer1.order > cardPlayer4.order) {
-                        this.players[0].setPoints(this.players[0].getPoints() + (cardPlayer1.value + cardPlayer2.value + cardPlayer3.value + cardPlayer4.value));
-                        this.setTurn(this.players[0].getId());
-                    }
-                    else if (cardPlayer2.order > cardPlayer1.order && cardPlayer2.order > cardPlayer3.order && cardPlayer2.order > cardPlayer4.order) {
-                        this.players[1].setPoints(this.players[1].getPoints() + (cardPlayer1.value + cardPlayer2.value + cardPlayer3.value + cardPlayer4.value));
-                        this.setTurn(this.players[1].getId());
-                    }
-                    else if (cardPlayer3.order > cardPlayer1.order && cardPlayer3.order > cardPlayer2.order && cardPlayer3.order > cardPlayer4.order) {
-                        this.players[2].setPoints(this.players[2].getPoints() + (cardPlayer1.value + cardPlayer2.value + cardPlayer3.value + cardPlayer4.value));
-                        this.setTurn(this.players[2].getId());
-                    } else {
-                        this.players[3].setPoints(this.players[3].getPoints() + (cardPlayer1.value + cardPlayer2.value + cardPlayer3.value + cardPlayer4.value));
-                        this.setTurn(this.players[3].getId());
-                    }
-                } else if (cardPlayer1.naipe === this.trump || cardPlayer2.naipe === this.trump || cardPlayer3.naipe === this.trump || cardPlayer3.naipe === this.trump) { */
-
-/*     let indexWinnerOfRound = '';
-    let pointsOfTurn = 0;
-
-    for (let player in this.players) {
-      for (let playerCompare in this.players) {
-        if (!(player === playerCompare)) {
-          if (this.players[player].getActualMove()?.naipe === this.players[playerCompare].getActualMove()?.naipe) {
-            if (!this.players[player].getActualMove()?.order > !this.players[player].getActualMove()?.order) {
-              indexWinnerOfRound = player;
-            } else {
-              indexWinnerOfRound = playerCompare;
-            }
-          } else {
-            if (this.players[player].getActualMove()?.naipe === this.trump) {
-              indexWinnerOfRound = player;
-            } else if (this.players[playerCompare].getActualMove()?.naipe === this.trump) {
-              indexWinnerOfRound = playerCompare;
-            } else {
-              if (this.players[player].getPublicId() === this.playerTurn) {
-                indexWinnerOfRound = player;
-              } else {
-                indexWinnerOfRound = playerCompare;
-              }
-            }
+        else {
+          if (prevMove.naipe === this.trump) return prev;
+          else if (currMove.naipe === this.trump) return curr;
+          else {
+            if (prev.getLastMoveTime() < curr.getLastMoveTime()) prev;
+            else return curr;
           }
         }
       }
 
-      pointsOfTurn += this.players[player].getPoints();
-    }
+      return prev;
+    }, this.players[0]);
 
-    this.players[Number(indexWinnerOfRound)].setPoints(this.players[Number(indexWinnerOfRound)].getPoints() + pointsOfTurn); */
-    //}
-    //}
+    let points = 0;
+    this.players.forEach(p => { points += (p.getActualMove()?.value || 0); });
+
+    winner.addPoints(points);
+    this.setTurn(winner.getPublicId());
   }
 
   private buyCards() {
