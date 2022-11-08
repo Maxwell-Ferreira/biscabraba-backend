@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import Game from "../Models/Game";
 import PlayCardRules from "../Rules/PlayCardRules";
-import { emitError, findGameIndexByPlayerId } from "../Utils";
+import { emitError, findGameByPlayerId } from "../Utils";
 import Validator from "../Validator";
 
 const playCard = async (io: any, socket: Socket, games: Array<Game>, props: any) => {
@@ -9,13 +9,11 @@ const playCard = async (io: any, socket: Socket, games: Array<Game>, props: any)
   
   if (data.errors) { return emitError(socket, 'Dados inválidos.'); }
 
-  const gameIndex = findGameIndexByPlayerId(games, socket.id);
-  if (gameIndex === -1) { return emitError(socket, 'Socket não conectado à nenhuma sala.'); }
-
-  const game = games[gameIndex];
+  const game = findGameByPlayerId(games, socket.id);
+  if (!game) return emitError(socket, 'Socket não conectado à nenhuma sala.');
 
   const playResult = game.playCard(data.card_id, socket.id);
-  if (playResult !== true) { return emitError(socket, playResult.error); }
+  if (playResult !== true) return emitError(socket, playResult.error);
 
   game.getPlayers().forEach(player => {
     io.to(player.getId()).emit('game-gameData', game.getPublicData(player.getId()));
@@ -27,9 +25,7 @@ const playCard = async (io: any, socket: Socket, games: Array<Game>, props: any)
     });
   }
 
-  if (game.end()) { io.to(game.getId()).emit("winnerTeam", game.getWinner()); }
-
-  games[gameIndex] = game;
+  if (game.end()) io.to(game.getId()).emit("winnerTeam", game.getWinner().map(player => player.getPublicData()));
 }
 
 export default playCard;

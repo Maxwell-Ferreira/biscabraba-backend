@@ -12,7 +12,7 @@ export default class Game {
   private numberOfPlays: number = 0;
   private numPlayers: number;
   private turnPlay: number = 0;
-
+  private numberOfGames: number = 0;
   private players: Array<Player> = [];
   private chat: Array<Message> = [];
 
@@ -104,7 +104,8 @@ export default class Game {
       numberOfPlays: this.numberOfPlays,
       currentPlayer: idCurrentPlayer ? this.players.find(player => player.getId() === idCurrentPlayer) : null,
       players: this.players.map(p => p.getPublicData()),
-      teams: this.getTeams()
+      teams: this.getTeams(),
+      numberOfCardsInDeck: this.deck.length
     }
   }
 
@@ -161,18 +162,18 @@ export default class Game {
       if (!this.verifySevenCard(card)) { return { error: 'O 7 de trunfo ainda não pode sair de canto.' }; }
       if (!this.verifyAsCard(card)) { return { error: 'O Ás de trunfo não pode sair antes da 7 de trunfo.' }; }
 
-      const playerIndex = this.players.findIndex(player => player.getId() === playerId);
-
       player.removeCardOfHand(card);
       player.setActualMove(card);
 
       this.numberOfPlays++;
 
+      const playerIndex = this.players.findIndex(player => player.getId() === playerId);
       const nextPlayer = this.players[playerIndex + 1] || this.players[0];
+
+      console.log(this.players);
+
       this.setTurn(nextPlayer.getPublicId());
       player.setLastMoveTime();
-
-      this.players[playerIndex] = player;
 
       return true;
     }
@@ -254,6 +255,8 @@ export default class Game {
         return false;
       }
     }
+
+    this.numberOfGames++;
 
     return true;
   }
