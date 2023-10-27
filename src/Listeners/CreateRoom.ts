@@ -1,25 +1,29 @@
-import { Socket } from "socket.io";
 import Game from "../Models/Game";
 import { createProps } from "../Models/Interfaces";
 import Player from "../Models/Player";
 import CreateRoomRules from "../Rules/CreateRoomRules";
-import { emitError, findGame } from "../Utils";
 import Validator from "../Validator";
+import { ListenerProps } from "../Types/ListenerProps";
 
-const createRoom = async (socket:Socket, games:Array<Game>, props:any) => {
-  const data = await Validator.validate(props, CreateRoomRules) as createProps;
-  if (data?.errors) { return emitError(socket, data?.errors); }
+const createRoom = async ({ socket, games, data }: ListenerProps) => {
+  const payload = await Validator.validate<createProps>(data, CreateRoomRules);
 
-  if (findGame(games, data.idRoom)) { return emitError(socket, 'Já existe uma sala com este ID.'); }
+  const alreadyExistsRoom = !!Game.find(games, payload.idRoom);
+  if (alreadyExistsRoom) throw new Error("Já existe uma sala com este ID.");
 
-  socket.join(data.idRoom);
-  const player = new Player(socket.id, data.playerName, data.idRoom, data.avatar);
+  socket.join(payload.idRoom);
+  const player = new Player(
+    socket.id,
+    payload.playerName,
+    payload.idRoom,
+    payload.avatar
+  );
 
-  const newGame: Game = new Game(data.idRoom, data.numPlayers);
+  const newGame: Game = new Game(payload.idRoom, payload.numPlayers);
   newGame.addNewPlayer(player);
 
   games.push(newGame);
-  socket.emit('loadRoom', newGame.getPublicData(socket.id));
-}
+  socket.emit("loadRoom", newGame.getPublicData(socket.id));
+};
 
 export default createRoom;

@@ -45,6 +45,10 @@ export default class Game {
     return this.getPlayers().map(player => player.getPublicData())
   }
 
+  static find(games: Game[], id: string) {
+    return games.find((game) => game.getId() === id);
+  }
+
   public getPlayerById(id: string): Player | null {
     let player = this.players.find(player => player.getId() === id)
 
