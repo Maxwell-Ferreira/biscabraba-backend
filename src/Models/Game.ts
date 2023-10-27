@@ -87,17 +87,15 @@ export default class Game {
 
   public initialize() {
     if (this.players.length === this.numPlayers) {
-      this.status = true;
-
-      this.defineTeams();
-      this.defineTrump();
-      this.giveCards();
-      this.setTurn(this.players[getRandomInt(0, this.numPlayers)].getPublicId());
-
-      return true;
+      throw new Error("Ainda faltam jogadores para a partida ser iniciada.");
     }
 
-    return false
+    this.status = true;
+
+    this.defineTeams();
+    this.defineTrump();
+    this.giveCards();
+    this.setTurn(this.players[getRandomInt(0, this.numPlayers)].getPublicId());
   }
 
   public getTeams() {

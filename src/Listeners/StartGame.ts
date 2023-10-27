@@ -1,20 +1,17 @@
-import { Socket } from "socket.io";
 import Game from "../Models/Game";
-import { emitError,findGameIndexByPlayerId } from "../Utils";
+import { ListenerProps } from "../Types/ListenerProps";
 
-const startGame = async (io:any, socket:Socket, games:Array<Game>) => {
-  const gameIndex = findGameIndexByPlayerId(games, socket.id);
-  if (gameIndex === -1) { return emitError(socket, 'Socket não conectado à nenhuma sala.'); }
+const startGame = async ({ io, socket, games }: ListenerProps) => {
+  const game = Game.findByPlayerId(games, socket.id);
+  if (!game) {
+    throw new Error("Socket não conectado à nenhuma sala.");
+  }
 
-  const game = games[gameIndex];
-  if (!game.initialize()) { return emitError(socket, 'Ainda faltam jogadores para a partida ser iniciada.'); }
+  game.initialize();
 
-  game.getPlayers().forEach(player => {
-    game.getPublicData(player.getId());
-    io.to(player.getId()).emit('startGame', game.getPublicData(player.getId()));
-  });
-
-  games[gameIndex] = game;
-}
+  for (const player of game.getPlayers()) {
+    io.to(player.getId()).emit("startGame", game.getPublicData(player.getId()));
+  }
+};
 
 export default startGame;
