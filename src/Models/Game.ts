@@ -311,6 +311,6 @@ export default class Game {
   public addMessage(text: string, player: string) {
     this.chat.push({ text, player });
 
-    return this.chat.length - 1;
+    return this.chat.length;
   }
 }
