@@ -6,8 +6,8 @@ import Player from "./Player";
 export default class Game {
   private id: string;
   private status: boolean = false;
-  private trump: string = '';
-  private playerTurn: number|null = null;
+  private trump: string = "";
+  private playerTurn: number | null = null;
   private statusAs: boolean = false;
   private numberOfPlays: number = 0;
   private numPlayers: number;
@@ -16,7 +16,7 @@ export default class Game {
   private players: Array<Player> = [];
   private chat: Array<Message> = [];
 
-  private naipes: Array<string> = ['copas', 'paus', 'ouros', 'espadas'];
+  private naipes: Array<string> = ["copas", "paus", "ouros", "espadas"];
 
   private deck: Array<Card> = deck;
 
@@ -42,7 +42,7 @@ export default class Game {
   }
 
   public getPlayersPublicData(): Array<PlayerPublicData> {
-    return this.getPlayers().map(player => player.getPublicData())
+    return this.getPlayers().map((player) => player.getPublicData());
   }
 
   static find(games: Game[], id: string) {
@@ -61,13 +61,13 @@ export default class Game {
       const player = game
         .getPlayers()
         .find((player) => player.getId() === playerId);
-        
+
       return player?.getRoom() === game.getId();
     });
   }
 
   public getPlayerById(id: string): Player | null {
-    let player = this.players.find(player => player.getId() === id)
+    let player = this.players.find((player) => player.getId() === id);
 
     if (player) return player;
     else return null;
@@ -101,13 +101,17 @@ export default class Game {
   public getTeams() {
     let team1 = {
       team: 1,
-      players: this.players.filter(player => player.getTeam() === 1).map(player => player.getPublicData())
-    }
+      players: this.players
+        .filter((player) => player.getTeam() === 1)
+        .map((player) => player.getPublicData()),
+    };
 
     let team2 = {
       team: 2,
-      players: this.players.filter(player => player.getTeam() === 2).map(player => player.getPublicData())
-    }
+      players: this.players
+        .filter((player) => player.getTeam() === 2)
+        .map((player) => player.getPublicData()),
+    };
 
     return [team1, team2];
   }
@@ -121,11 +125,13 @@ export default class Game {
       playerTurn: this.playerTurn,
       statusAs: this.statusAs,
       numberOfPlays: this.numberOfPlays,
-      currentPlayer: idCurrentPlayer ? this.players.find(player => player.getId() === idCurrentPlayer) : null,
-      players: this.players.map(p => p.getPublicData()),
+      currentPlayer: idCurrentPlayer
+        ? this.players.find((player) => player.getId() === idCurrentPlayer)
+        : null,
+      players: this.players.map((p) => p.getPublicData()),
       teams: this.getTeams(),
-      numberOfCardsInDeck: this.deck.length
-    }
+      numberOfCardsInDeck: this.deck.length,
+    };
   }
 
   private defineTeams() {
@@ -143,9 +149,12 @@ export default class Game {
   private giveCards() {
     for (var player in this.players) {
       for (var j = 0; j < 3; j++) {
-        let num = getRandomInt(0, (this.deck.length - 1));
-        
-        this.players[player].setHand([...this.players[player].getHand(), this.deck[num]]);
+        let num = getRandomInt(0, this.deck.length - 1);
+
+        this.players[player].setHand([
+          ...this.players[player].getHand(),
+          this.deck[num],
+        ]);
         this.deck.splice(num, 1);
       }
     }
@@ -195,15 +204,13 @@ export default class Game {
 
   private verifyStatusPlayers() {
     for (let player of this.players) {
-      if (player.getActualMove() === null)
-        return false;
+      if (player.getActualMove() === null) return false;
     }
 
     return true;
   }
 
   private calculateRound() {
-
     const winner = this.players.reduce((prev, curr) => {
       if (prev.getId() === curr.getId()) return curr;
 
@@ -214,8 +221,7 @@ export default class Game {
         if (prevMove.naipe === currMove.naipe) {
           if (prevMove.order > currMove.order) return prev;
           else return curr;
-        }
-        else {
+        } else {
           if (prevMove.naipe === this.trump) return prev;
           else if (currMove.naipe === this.trump) return curr;
           else {
@@ -229,7 +235,9 @@ export default class Game {
     }, this.players[0]);
 
     let points = 0;
-    this.players.forEach(p => { points += (p.getActualMove()?.value || 0); });
+    this.players.forEach((p) => {
+      points += p.getActualMove()?.value || 0;
+    });
 
     winner.addPoints(points);
     this.setTurn(winner.getPublicId());
@@ -237,7 +245,7 @@ export default class Game {
 
   private buyCards() {
     for (let p in this.players) {
-      let deckIndex = getRandomInt(0, (this.deck.length - 1));
+      let deckIndex = getRandomInt(0, this.deck.length - 1);
 
       let oldHand = this.players[p].getHand();
       let newHand = [...oldHand, this.deck[deckIndex]];
@@ -280,10 +288,8 @@ export default class Game {
     let pointsTeam2 = 0;
 
     for (let player of this.players) {
-      if (player.getTeam() === 1)
-        pointsTeam1 += player.getPoints();
-      else
-        pointsTeam2 += player.getPoints();
+      if (player.getTeam() === 1) pointsTeam1 += player.getPoints();
+      else pointsTeam2 += player.getPoints();
     }
 
     if (pointsTeam1 > pointsTeam2) return this.getTeam(1);
@@ -294,15 +300,14 @@ export default class Game {
     let team: Array<Player> = [];
 
     for (let player of this.players) {
-      if (player.getTeam() === numTeam)
-        team.push(player);
+      if (player.getTeam() === numTeam) team.push(player);
     }
 
     return team;
   }
 
   public removePlayer(socketId: string) {
-    const playerIndex = this.players.findIndex(p => p.getId() === socketId);
+    const playerIndex = this.players.findIndex((p) => p.getId() === socketId);
     if (playerIndex !== -1) {
       this.players.splice(playerIndex, 1);
     }
