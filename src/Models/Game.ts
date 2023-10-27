@@ -49,6 +49,13 @@ export default class Game {
     return games.find((game) => game.getId() === id);
   }
 
+  static findOrFail(games: Game[], id: string) {
+    const game = Game.find(games, id);
+    if (!game) throw new Error("Sala não encontrada");
+
+    return game;
+  }
+
   public getPlayerById(id: string): Player | null {
     let player = this.players.find(player => player.getId() === id)
 
