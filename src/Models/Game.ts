@@ -16,6 +16,8 @@ export default class Game {
   private players: Array<Player> = [];
   private chat: Array<Message> = [];
 
+  private turnCardWin: Card | null = null;
+
   private naipes: Array<string> = ["copas", "paus", "ouros", "espadas"];
 
   private deck: Array<Card> = deck;
@@ -172,6 +174,20 @@ export default class Game {
     }
   }
 
+  private verifyTurnCardWin(card: Card) {
+    if (!this.turnCardWin) {
+      this.turnCardWin = card;
+    } else {
+      if (card.naipe === this.turnCardWin.naipe) {
+        if (card.order > this.turnCardWin.order) {
+          this.turnCardWin = card;
+        }
+      } else if (card.naipe === this.trump) {
+        this.turnCardWin = card;
+      }
+    }
+  }
+
   public playCard(cardId: number, playerId: string) {
     const player = this.players.find((player) => player.getId() === playerId);
 
@@ -188,6 +204,8 @@ export default class Game {
 
     player.removeCardOfHand(card);
     player.setActualMove(card);
+
+    this.verifyTurnCardWin({ ...card, playerId: player.getId() });
 
     this.numberOfPlays++;
 
@@ -211,36 +229,18 @@ export default class Game {
   }
 
   private calculateRound() {
-    const winner = this.players.reduce((prev, curr) => {
-      if (prev.getId() === curr.getId()) return curr;
-
-      const prevMove = prev.getActualMove();
-      const currMove = curr.getActualMove();
-
-      if (prevMove && currMove) {
-        if (prevMove.naipe === currMove.naipe) {
-          if (prevMove.order > currMove.order) return prev;
-          else return curr;
-        } else {
-          if (prevMove.naipe === this.trump) return prev;
-          else if (currMove.naipe === this.trump) return curr;
-          else {
-            if (prev.getLastMoveTime() < curr.getLastMoveTime()) prev;
-            else return curr;
-          }
-        }
-      }
-
-      return prev;
-    }, this.players[0]);
+    const winner = this.players.find(
+      (player) => player.getId() === this.turnCardWin!.playerId
+    )!;
 
     let points = 0;
-    this.players.forEach((p) => {
-      points += p.getActualMove()?.value || 0;
-    });
+    for (const player of this.players) {
+      points += player.getActualMove()?.value || 0;
+    }
 
     winner.addPoints(points);
     this.setTurn(winner.getPublicId());
+    this.turnCardWin = null;
   }
 
   private buyCards() {

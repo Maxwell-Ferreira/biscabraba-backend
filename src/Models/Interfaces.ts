@@ -14,6 +14,7 @@ export interface PlayerPublicData {
 
 export interface Card {
     id: number,
+    playerId?: string,
     name: string,
     naipe: string,
     value: number,
