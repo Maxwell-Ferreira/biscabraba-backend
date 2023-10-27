@@ -56,6 +56,16 @@ export default class Game {
     return game;
   }
 
+  static findByPlayerId(games: Game[], playerId: string) {
+    return games.find((game) => {
+      const player = game
+        .getPlayers()
+        .find((player) => player.getId() === playerId);
+        
+      return player?.getRoom() === game.getId();
+    });
+  }
+
   public getPlayerById(id: string): Player | null {
     let player = this.players.find(player => player.getId() === id)
 
