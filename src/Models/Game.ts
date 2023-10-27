@@ -152,50 +152,45 @@ export default class Game {
   }
 
   private verifySevenCard(card: Card) {
-    if (card.naipe === this.trump && card.order === 8) {
-      if (this.turnPlay === 4) { return false; }
-      this.statusAs = true;
+    if (card.naipe === this.trump && card.order === 8 && this.turnPlay === 4) {
+      throw new Error("O 7 de trunfo ainda não pode sair de canto.");
     }
-
-    return true;
   }
 
-  private verifyAsCard(card: Card) {
+  private verifyAceCard(card: Card) {
     if (card.naipe === this.trump && card.order === 9 && !this.statusAs) {
-      return false;
+      throw new Error("O Ás de trunfo não pode sair antes da 7 de trunfo.");
     }
-
-    return true;
   }
 
   public playCard(cardId: number, playerId: string) {
-    const player = this.players.find(player => player.getId() === playerId);
+    const player = this.players.find((player) => player.getId() === playerId);
 
-    if (!player) { return { error: 'Jogador não encontrado' }; }
-    else {
-      if (!(player.getPublicId() === this.playerTurn)) { return { error: 'Não é o turno deste jogador.' }; }
+    if (!player) throw new Error("Jogador não encontrado");
 
-      const card = player.getCardOfHand(cardId);
-      if (!card) { return { error: 'Carta não está na mão do jogador.' }; }
+    if (!(player.getPublicId() === this.playerTurn))
+      throw new Error("Não é o turno deste jogador.");
 
-      if (!this.verifySevenCard(card)) { return { error: 'O 7 de trunfo ainda não pode sair de canto.' }; }
-      if (!this.verifyAsCard(card)) { return { error: 'O Ás de trunfo não pode sair antes da 7 de trunfo.' }; }
+    const card = player.getCardOfHand(cardId);
+    if (!card) throw new Error("Carta não está na mão do jogador.");
 
-      player.removeCardOfHand(card);
-      player.setActualMove(card);
+    this.verifySevenCard(card);
+    this.verifyAceCard(card);
 
-      this.numberOfPlays++;
+    player.removeCardOfHand(card);
+    player.setActualMove(card);
 
-      const playerIndex = this.players.findIndex(player => player.getId() === playerId);
-      const nextPlayer = this.players[playerIndex + 1] || this.players[0];
+    this.numberOfPlays++;
 
-      console.log(this.players);
+    const playerIndex = this.players.findIndex(
+      (player) => player.getId() === playerId
+    );
+    const nextPlayer = this.players[playerIndex + 1] || this.players[0];
 
-      this.setTurn(nextPlayer.getPublicId());
-      player.setLastMoveTime();
+    this.setTurn(nextPlayer.getPublicId());
+    player.setLastMoveTime();
 
-      return true;
-    }
+    return true;
   }
 
   private verifyStatusPlayers() {
