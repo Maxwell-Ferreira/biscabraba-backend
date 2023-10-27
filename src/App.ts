@@ -3,7 +3,7 @@ import Events from './Core/Events';
 import Game from './Models/Game';
 
 function App(io: any) {
-  let games: Array<Game> = [];
+  const games: Array<Game> = [];
 
   io.on('connection', function (socket: Socket) {
     console.log(`Socket connected -> id:${socket.id}`);
