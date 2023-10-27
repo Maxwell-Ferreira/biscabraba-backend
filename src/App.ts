@@ -1,14 +1,15 @@
-import { Socket } from 'socket.io';
-import Events from './Core/Events';
-import Game from './Models/Game';
+import { Socket } from "socket.io";
+import Events from "./Core/Events";
+import Game from "./Models/Game";
 
 function App(io: any) {
   const games: Array<Game> = [];
 
-  io.on('connection', function (socket: Socket) {
+  io.on("connection", function (socket: Socket) {
     console.log(`Socket connected -> id:${socket.id}`);
 
-    Events.register(io, socket, games);
+    const events = new Events();
+    events.register(io, socket, games);
   });
 }
 
