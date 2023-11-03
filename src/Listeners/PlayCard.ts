@@ -11,11 +11,18 @@ const playCard = async ({ io, socket, games, data }: ListenerProps) => {
 
   game.playCard(payload.card_id, socket.id);
 
-  const nextEvent = game.verifyRoundCompleted() ? "buy-card" : "card-played";
+  const players = game.getPlayers();
 
-  for (const player of game.getPlayers()) {
+  for (const player of players) {
     const publicData = game.getPublicData(player.getId());
-    io.to(player.getId()).emit(nextEvent, publicData);
+    io.to(player.getId()).emit("card-played", publicData);
+  }
+
+  if (game.verifyRoundCompleted()) {
+    for (const player of game.getPlayers()) {
+      const publicData = game.getPublicData(player.getId());
+      io.to(player.getId()).emit("buy-card", publicData);
+    }
   }
 
   if (game.end())
