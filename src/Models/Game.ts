@@ -88,7 +88,7 @@ export default class Game {
   }
 
   public initialize() {
-    if (this.players.length === this.numPlayers) {
+    if (this.players.length !== this.numPlayers) {
       throw new Error("Ainda faltam jogadores para a partida ser iniciada.");
     }
 
@@ -163,8 +163,12 @@ export default class Game {
   }
 
   private verifySevenCard(card: Card) {
-    if (card.naipe === this.trump && card.order === 8 && this.turnPlay === 4) {
-      throw new Error("O 7 de trunfo ainda não pode sair de canto.");
+    if (card.naipe === this.trump && card.order === 8) {
+      if (this.turnPlay === 4) {
+        throw new Error("O 7 de trunfo ainda não pode sair de canto.");
+      }
+
+      this.statusAs = true;
     }
   }
 
