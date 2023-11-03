@@ -18,7 +18,7 @@ const message = async ({ io, socket, games, data }: ListenerProps) => {
   const playerName = player.getName() || "";
 
   const messageId = game.addMessage(text, playerName);
-  const message = { playerName, text, id: messageId };
+  const message = { playerName, text, id: messageId, createdAt: new Date() };
 
   io.to(player.getRoom()).emit("chat-message", message);
 };
