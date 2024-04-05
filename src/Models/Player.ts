@@ -1,45 +1,22 @@
 import { Card, PlayerPublicData } from "./Interfaces";
 
 export default class Player {
-  private id: string;
-  private publicId: number;
-  private name: string;
-  private room: string;
-  private hand: Array<Card> = [];
-  private actualMove: Card | null = null;
-  private isTurn: boolean = false;
-  private points: number = 0;
-  private team: number = 0;
-  private avatar: number;
-  private lastMoveTime: number;
+  publicId: number;
+  hand: Array<Card> = [];
+  actualMove: Card | null = null;
+  isTurn: boolean = false;
+  points: number = 0;
+  team: number = 0;
+  lastMoveTime: number;
 
-  constructor(id: string, name: string, room: string, avatar: number) {
-    this.id = id;
-    this.name = name;
-    this.room = room;
-    this.avatar = avatar;
+  constructor(
+    public id: string,
+    public name: string,
+    public room: string,
+    public avatar: number
+  ) {
     this.publicId = new Date().getTime();
     this.lastMoveTime = this.publicId;
-  }
-
-  public getId(): string {
-    return this.id;
-  }
-
-  public getPublicId() {
-    return this.publicId;
-  }
-
-  public getName(): string {
-    return this.name;
-  }
-
-  public getRoom(): string {
-    return this.room;
-  }
-
-  public getTeam(): number {
-    return this.team;
   }
 
   public getPublicData(): PlayerPublicData {
@@ -50,42 +27,14 @@ export default class Player {
       points: this.points,
       team: this.team,
       numCards: this.hand.length,
-      actualMove: this.actualMove
+      actualMove: this.actualMove,
     };
   }
 
-  public setTeam(team: number): void {
-    this.team = team;
-  }
-
-  public getHand(): Array<Card> {
-    return this.hand;
-  }
-
-  public setHand(hand: Array<Card>): void {
-    this.hand = hand;
-  }
-
-  public getIsTurn() {
-    return this.isTurn;
-  }
-
-  public getActualMove(): Card | null {
-    return this.actualMove;
-  }
-
-  public setActualMove(card: Card | null) {
-    this.actualMove = card;
-  }
-
   public removeCardOfHand(card: Card) {
-    const cardIndex = this.hand.findIndex(c => c.id === card.id);
-    
-    this.hand.splice(cardIndex, 1);
-  }
+    const cardIndex = this.hand.findIndex((c) => c.id === card.id);
 
-  public getPoints() {
-    return this.points;
+    this.hand.splice(cardIndex, 1);
   }
 
   public addPoints(points: number) {
@@ -93,13 +42,9 @@ export default class Player {
   }
 
   public getCardOfHand(cardId: number) {
-    const card = this.hand.find(card => card.id === cardId);
-    
-    return card;
-  }
+    const card = this.hand.find((card) => card.id === cardId);
 
-  public getLastMoveTime() : number {
-    return this.lastMoveTime
+    return card;
   }
 
   public setLastMoveTime() {

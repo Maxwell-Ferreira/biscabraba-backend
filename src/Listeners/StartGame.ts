@@ -9,8 +9,8 @@ const startGame = async ({ io, socket, games }: ListenerProps) => {
 
   game.initialize();
 
-  for (const player of game.getPlayers()) {
-    io.to(player.getId()).emit("startGame", game.getPublicData(player.getId()));
+  for (const p of game.players) {
+    io.to(p.id).emit("startGame", game.getPublicData(p.id));
   }
 };
 

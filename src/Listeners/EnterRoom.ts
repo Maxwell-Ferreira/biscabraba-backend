@@ -9,7 +9,7 @@ const enterRoom = async ({ socket, games, data }: ListenerProps) => {
   const payload = await Validator.validate<enterProps>(data, EnterRoomRules);
 
   const game = Game.findOrFail(games, payload.idRoom);
-  if (game.getActualNumPlayers() === game.getNumPlayers()) {
+  if (game.actualNumPlayers === game.numPlayers) {
     throw new Error("Sala cheia!");
   }
 
@@ -21,17 +21,13 @@ const enterRoom = async ({ socket, games, data }: ListenerProps) => {
   );
   game.addNewPlayer(player);
 
-  socket.join(game.getId());
+  socket.join(game.id);
   socket.emit("loadRoom", game.getPublicData(socket.id));
 
-  const otherPlayers = game
-    .getPlayers()
-    .filter((gamePlayer) => gamePlayer.getId() !== player.getId());
+  const otherPlayers = game.players.filter((p) => p.id !== player.id);
 
-  for (const player of otherPlayers) {
-    socket
-      .to(player.getId())
-      .emit("newPlayer", game.getPublicData(player.getId()));
+  for (const p of otherPlayers) {
+    socket.to(p.id).emit("newPlayer", game.getPublicData(p.id));
   }
 };
 

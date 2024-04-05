@@ -4,51 +4,26 @@ import { Card, Message, PlayerPublicData } from "./Interfaces";
 import Player from "./Player";
 
 export default class Game {
-  private id: string;
-  private status: boolean = false;
-  private trump: string = "";
-  private playerTurn: number | null = null;
-  private statusAs: boolean = false;
-  private numberOfPlays: number = 0;
-  private numPlayers: number;
-  private turnPlay: number = 0;
-  private numberOfGames: number = 0;
-  private players: Array<Player> = [];
-  private chat: Array<Message> = [];
+  status: boolean = false;
+  trump: string = "";
+  playerTurn: number | null = null;
+  statusAs: boolean = false;
+  numberOfPlays: number = 0;
+  turnPlay: number = 0;
+  numberOfGames: number = 0;
+  players: Array<Player> = [];
+  chat: Array<Message> = [];
 
-  private turnCardWin: Card | null = null;
+  turnCardWin: Card | null = null;
 
-  private naipes: Array<string> = ["copas", "paus", "ouros", "espadas"];
+  naipes: Array<string> = ["copas", "paus", "ouros", "espadas"];
 
-  private deck: Array<Card> = deck;
+  deck: Array<Card> = deck;
 
-  constructor(id: string, numPlayers: number) {
-    this.id = id;
-    this.numPlayers = numPlayers;
-  }
-
-  public getId(): string {
-    return this.id;
-  }
-
-  public getPlayers(): Array<Player> {
-    return this.players;
-  }
-
-  public getNumPlayers(): number {
-    return this.numPlayers;
-  }
-
-  public getActualNumPlayers(): number {
-    return this.players.length;
-  }
-
-  public getPlayersPublicData(): Array<PlayerPublicData> {
-    return this.getPlayers().map((player) => player.getPublicData());
-  }
+  constructor(public id: string, public numPlayers: number) {}
 
   static find(games: Game[], id: string) {
-    return games.find((game) => game.getId() === id);
+    return games.find((game) => game.id === id);
   }
 
   static findOrFail(games: Game[], id: string) {
@@ -60,23 +35,21 @@ export default class Game {
 
   static findByPlayerId(games: Game[], playerId: string) {
     return games.find((game) => {
-      const player = game
-        .getPlayers()
-        .find((player) => player.getId() === playerId);
-
-      return player?.getRoom() === game.getId();
+      const player = game.players.find((player) => player.id === playerId);
+      return player?.room === game.id;
     });
   }
 
-  public getPlayerById(id: string): Player | null {
-    let player = this.players.find((player) => player.getId() === id);
-
-    if (player) return player;
-    else return null;
+  public get actualNumPlayers(): number {
+    return this.players.length;
   }
 
-  public getStatus(): boolean {
-    return this.status;
+  public getPlayersPublicData(): Array<PlayerPublicData> {
+    return this.players.map((player) => player.getPublicData());
+  }
+
+  public getPlayerById(id: string): Player | null {
+    return this.players.find((player) => player.id === id) || null;
   }
 
   private setTurn(publicId: number) {
@@ -88,7 +61,7 @@ export default class Game {
   }
 
   public initialize() {
-    if (this.players.length !== this.numPlayers) {
+    if (this.actualNumPlayers !== this.numPlayers) {
       throw new Error("Ainda faltam jogadores para a partida ser iniciada.");
     }
 
@@ -97,28 +70,32 @@ export default class Game {
     this.defineTeams();
     this.defineTrump();
     this.giveCards();
-    this.setTurn(this.players[getRandomInt(0, this.numPlayers)].getPublicId());
+    this.setTurn(this.players[getRandomInt(0, this.numPlayers)].publicId);
   }
 
   public getTeams() {
     let team1 = {
       team: 1,
       players: this.players
-        .filter((player) => player.getTeam() === 1)
+        .filter((player) => player.team === 1)
         .map((player) => player.getPublicData()),
     };
 
     let team2 = {
       team: 2,
       players: this.players
-        .filter((player) => player.getTeam() === 2)
+        .filter((player) => player.team === 2)
         .map((player) => player.getPublicData()),
     };
 
     return [team1, team2];
   }
 
-  public getPublicData(idCurrentPlayer: string | null = null) {
+  public getPublicData(currentPlayerId: string | null = null) {
+    const currentPlayer = currentPlayerId
+      ? this.players.find((player) => player.id === currentPlayerId)
+      : null;
+
     return {
       idRoom: this.id,
       gameStatus: this.status,
@@ -127,9 +104,7 @@ export default class Game {
       playerTurn: this.playerTurn,
       statusAs: this.statusAs,
       numberOfPlays: this.numberOfPlays,
-      currentPlayer: idCurrentPlayer
-        ? this.players.find((player) => player.getId() === idCurrentPlayer)
-        : null,
+      currentPlayer,
       players: this.players.map((p) => p.getPublicData()),
       teams: this.getTeams(),
       numberOfCardsInDeck: this.deck.length,
@@ -138,10 +113,10 @@ export default class Game {
 
   private defineTeams() {
     let team = 1;
-    this.players.forEach((p, i) => {
-      this.players[i].setTeam(team);
+    for (const player of this.players) {
+      player.team = team;
       team = team === 1 ? 2 : 1;
-    });
+    }
   }
 
   private defineTrump() {
@@ -149,14 +124,10 @@ export default class Game {
   }
 
   private giveCards() {
-    for (var player in this.players) {
-      for (var j = 0; j < 3; j++) {
-        let num = getRandomInt(0, this.deck.length - 1);
-
-        this.players[player].setHand([
-          ...this.players[player].getHand(),
-          this.deck[num],
-        ]);
+    for (const player of this.players) {
+      for (let i = 0; i < 3; i++) {
+        const num = getRandomInt(0, this.deck.length - 1);
+        player.hand = [...player.hand, this.deck[num]];
         this.deck.splice(num, 1);
       }
     }
@@ -165,7 +136,9 @@ export default class Game {
   private verifySevenCard(card: Card) {
     if (card.naipe === this.trump && card.order === 8) {
       if (this.turnPlay === 4) {
-        throw new Error("O 7 de trunfo ainda não pode sair de canto.");
+        throw new Error(
+          "A 7 do trunfo não pode ser a última carta jogada na rodada."
+        );
       }
 
       this.statusAs = true;
@@ -193,12 +166,14 @@ export default class Game {
   }
 
   public playCard(cardId: number, playerId: string) {
-    const player = this.players.find((player) => player.getId() === playerId);
+    const player = this.players.find((p) => p.id === playerId);
+    if (!player) {
+      throw new Error("Jogador não encontrado");
+    }
 
-    if (!player) throw new Error("Jogador não encontrado");
-
-    if (!(player.getPublicId() === this.playerTurn))
+    if (!(player.publicId === this.playerTurn)) {
       throw new Error("Não é o turno deste jogador.");
+    }
 
     const card = player.getCardOfHand(cardId);
     if (!card) throw new Error("Carta não está na mão do jogador.");
@@ -207,111 +182,100 @@ export default class Game {
     this.verifyAceCard(card);
 
     player.removeCardOfHand(card);
-    player.setActualMove(card);
+    player.actualMove = card;
 
-    this.verifyTurnCardWin({ ...card, playerId: player.getId() });
+    this.verifyTurnCardWin({ ...card, playerId: player.id });
 
     this.numberOfPlays++;
 
-    const playerIndex = this.players.findIndex(
-      (player) => player.getId() === playerId
-    );
+    const playerIndex = this.players.findIndex((p) => p.id === playerId);
     const nextPlayer = this.players[playerIndex + 1] || this.players[0];
 
-    this.setTurn(nextPlayer.getPublicId());
+    this.setTurn(nextPlayer.publicId);
     player.setLastMoveTime();
 
     return true;
   }
 
   private verifyStatusPlayers() {
-    for (let player of this.players) {
-      if (player.getActualMove() === null) return false;
-    }
-
-    return true;
+    return !this.players.find((p) => p.actualMove === null);
   }
 
   private calculateRound() {
     const winner = this.players.find(
-      (player) => player.getId() === this.turnCardWin!.playerId
-    )!;
+      (p) => p.id === this.turnCardWin?.playerId
+    );
+
+    if (!winner) {
+      throw new Error("Não há um vencedor.");
+    }
 
     let points = 0;
     for (const player of this.players) {
-      points += player.getActualMove()?.value || 0;
+      points += player.actualMove?.value || 0;
     }
 
     winner.addPoints(points);
-    this.setTurn(winner.getPublicId());
+    this.setTurn(winner.publicId);
     this.turnCardWin = null;
   }
 
   private buyCards() {
-    for (let p in this.players) {
-      let deckIndex = getRandomInt(0, this.deck.length - 1);
+    for (const player of this.players) {
+      const deckIndex = getRandomInt(0, this.deck.length - 1);
+      const newCard = this.deck[deckIndex];
 
-      let oldHand = this.players[p].getHand();
-      let newHand = [...oldHand, this.deck[deckIndex]];
-
-      this.players[p].setHand(newHand);
-      this.players[p].setActualMove(null);
+      player.hand = [...player.hand, newCard];
+      player.actualMove = null;
 
       this.deck.splice(deckIndex, 1);
     }
   }
 
   public verifyRoundCompleted() {
-    if (this.verifyStatusPlayers()) {
-      this.calculateRound();
-
-      if (this.deck.length > 0) {
-        this.buyCards();
-      }
-
-      return true;
+    if (!this.verifyStatusPlayers()) {
+      return false;
     }
 
-    return false;
+    this.calculateRound();
+
+    if (this.deck.length > 0) {
+      this.buyCards();
+    }
+
+    return true;
   }
 
   public end() {
-    for (let player of this.players) {
-      if (player.getHand().length > 0) {
+    for (const player of this.players) {
+      if (player.hand.length > 0) {
         return false;
       }
     }
 
     this.numberOfGames++;
-
     return true;
   }
 
   public getWinner() {
-    let pointsTeam1 = 0;
-    let pointsTeam2 = 0;
+    let team1Points = 0;
+    let team2Points = 0;
 
-    for (let player of this.players) {
-      if (player.getTeam() === 1) pointsTeam1 += player.getPoints();
-      else pointsTeam2 += player.getPoints();
+    for (const player of this.players) {
+      if (player.team === 1) team1Points += player.points;
+      else team2Points += player.points;
     }
 
-    if (pointsTeam1 > pointsTeam2) return this.getTeam(1);
+    if (team1Points > team2Points) return this.getTeam(1);
     else return this.getTeam(2);
   }
 
   public getTeam(numTeam: number) {
-    let team: Array<Player> = [];
-
-    for (let player of this.players) {
-      if (player.getTeam() === numTeam) team.push(player);
-    }
-
-    return team;
+    return this.players.filter((p) => p.team === numTeam);
   }
 
   public removePlayer(socketId: string) {
-    const playerIndex = this.players.findIndex((p) => p.getId() === socketId);
+    const playerIndex = this.players.findIndex((p) => p.id === socketId);
     if (playerIndex !== -1) {
       this.players.splice(playerIndex, 1);
     }
@@ -319,7 +283,6 @@ export default class Game {
 
   public addMessage(text: string, player: string) {
     this.chat.push({ text, player });
-
     return this.chat.length;
   }
 }

@@ -2,28 +2,30 @@ import Game from "../Models/Game";
 import { ListenerProps } from "../Types/ListenerProps";
 
 const disconnect = async ({ io, socket, games }: ListenerProps) => {
-  const game = Game.findByPlayerId(games, socket.id);
-
   console.log(`Socket disconnected -> id: ${socket.id}`);
 
+  const game = Game.findByPlayerId(games, socket.id);
   if (!game) return;
 
-  const gameId = game.getId();
+  const gameId = game.id;
 
-  if (game.getStatus() || game.getActualNumPlayers() === 1) {
+  if (game.status || game.actualNumPlayers === 1) {
     const player = game.getPlayerById(socket.id)!;
-
-    const gameIndex = games.findIndex((game) => game.getId() === gameId);
+    const gameIndex = games.findIndex((game) => game.id === gameId);
+    games.splice(gameIndex, 1);
 
     io.to(gameId).emit(
       "game-player-disconected",
-      `${player.getName()} foi desconectado! A partida foi encerrada.`
+      `${player.name} foi desconectado! A partida foi encerrada.`
     );
-    games.splice(gameIndex, 1);
-  } else {
-    game.removePlayer(socket.id);
-    io.to(gameId).emit("room-playerDisconnected", game.getPublicData());
+
+    return;
   }
+
+  game.removePlayer(socket.id);
+  io.to(gameId).emit("room-playerDisconnected", game.getPublicData());
+
+  return;
 };
 
 export default disconnect;

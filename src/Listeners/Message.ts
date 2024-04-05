@@ -15,12 +15,12 @@ const message = async ({ io, socket, games, data }: ListenerProps) => {
   if (!game) return;
 
   const player = game.getPlayerById(socket.id)!;
-  const playerName = player.getName() || "";
+  const playerName = player.name || "";
 
   const messageId = game.addMessage(text, playerName);
   const message = { playerName, text, id: messageId, createdAt: new Date() };
 
-  io.to(player.getRoom()).emit("chat-message", message);
+  io.to(player.room).emit("chat-message", message);
 };
 
 export default message;

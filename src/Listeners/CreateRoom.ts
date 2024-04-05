@@ -19,7 +19,7 @@ const createRoom = async ({ socket, games, data }: ListenerProps) => {
     payload.avatar
   );
 
-  const newGame: Game = new Game(payload.idRoom, payload.numPlayers);
+  const newGame = new Game(payload.idRoom, payload.numPlayers);
   newGame.addNewPlayer(player);
 
   games.push(newGame);

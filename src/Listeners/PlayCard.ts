@@ -11,25 +11,26 @@ const playCard = async ({ io, socket, games, data }: ListenerProps) => {
 
   game.playCard(payload.card_id, socket.id);
 
-  const players = game.getPlayers();
+  const players = game.players;
 
-  for (const player of players) {
-    const publicData = game.getPublicData(player.getId());
-    io.to(player.getId()).emit("card-played", publicData);
+  for (const p of players) {
+    const publicData = game.getPublicData(p.id);
+    io.to(p.id).emit("card-played", publicData);
   }
 
   if (game.verifyRoundCompleted()) {
-    for (const player of game.getPlayers()) {
-      const publicData = game.getPublicData(player.getId());
-      io.to(player.getId()).emit("buy-card", publicData);
+    for (const p of players) {
+      const publicData = game.getPublicData(p.id);
+      io.to(p.id).emit("buy-card", publicData);
     }
   }
 
-  if (game.end())
-    io.to(game.getId()).emit(
+  if (game.end()) {
+    io.to(game.id).emit(
       "winnerTeam",
-      game.getWinner().map((player) => player.getPublicData())
+      game.getWinner().map((p) => p.getPublicData())
     );
+  }
 };
 
 export default playCard;
