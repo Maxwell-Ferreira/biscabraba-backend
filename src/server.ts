@@ -12,11 +12,11 @@ const io = require("socket.io")(server, {
 });
 
 if (process.env.ENVIRONMENT === "production") {
-  app.use(express.static(path.join(__dirname, "../../react_build")));
-  app.set("views", path.join(__dirname, "../../react_build"));
+  app.use(express.static(path.join(process.cwd(), "react_build")));
+  app.set("views", path.join(process.cwd(), "react_build"));
 } else {
-  app.use(express.static(path.join(__dirname, "../react_build")));
-  app.set("views", path.join(__dirname, "../react_build"));
+  app.use(express.static(path.join(process.cwd(), "react_build")));
+  app.set("views", path.join(process.cwd(), "react_build"));
 }
 
 app.engine("html", require("ejs").renderFile);
