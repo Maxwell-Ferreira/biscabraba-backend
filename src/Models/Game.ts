@@ -20,7 +20,10 @@ export default class Game {
 
   deck: Array<Card> = [...deck];
 
-  constructor(public id: string, public numPlayers: number) {}
+  constructor(
+    public id: string,
+    public numPlayers: number,
+  ) {}
 
   static find(games: Game[], id: string) {
     return games.find((game) => game.id === id);
@@ -135,9 +138,9 @@ export default class Game {
 
   private verifySevenCard(card: Card) {
     if (card.naipe === this.trump && card.order === 8) {
-      if (this.turnPlay === this.numPlayers - 1) {
+      if (this.turnPlay === this.numPlayers - 1 && this.numPlayers === 4) {
         throw new Error(
-          "A 7 do trunfo não pode ser a última carta jogada na rodada."
+          "A 7 do trunfo não pode ser a última carta jogada na rodada.",
         );
       }
 
@@ -204,7 +207,7 @@ export default class Game {
 
   private calculateRound() {
     const winner = this.players.find(
-      (p) => p.id === this.turnCardWin?.playerId
+      (p) => p.id === this.turnCardWin?.playerId,
     );
 
     if (!winner) {
