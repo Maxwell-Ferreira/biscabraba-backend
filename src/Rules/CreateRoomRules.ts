@@ -10,7 +10,12 @@ const rules = () => {
       validations.integer(),
       validations.in([2, 4]),
     ],
-    avatar: 'required|in:1,2,3,4'
+    // avatar: 'required|in:1,2,3,4',
+    avatar: [
+      validations.required(),
+      validations.integer(),
+      validations.in([1, 2, 3, 4]),
+    ]
   }
 }
 
