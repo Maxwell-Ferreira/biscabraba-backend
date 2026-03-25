@@ -30,6 +30,11 @@ const playCard = async ({ io, socket, games, data }: ListenerProps) => {
       "winnerTeam",
       game.getWinner().map((p) => p.getPublicData())
     );
+
+    const gameIndex = games.findIndex((g) => g.id === game.id);
+    if (gameIndex !== -1) {
+      games.splice(gameIndex, 1);
+    }
   }
 };
 

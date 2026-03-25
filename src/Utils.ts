@@ -9,4 +9,4 @@ export function emitError(socket: Socket, errors: Array<any>|string) {
   }
 }
 
-export const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min)) + min;
+export const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;

@@ -18,7 +18,7 @@ export default class Game {
 
   naipes: Array<string> = ["copas", "paus", "ouros", "espadas"];
 
-  deck: Array<Card> = deck;
+  deck: Array<Card> = [...deck];
 
   constructor(public id: string, public numPlayers: number) {}
 
@@ -70,7 +70,7 @@ export default class Game {
     this.defineTeams();
     this.defineTrump();
     this.giveCards();
-    this.setTurn(this.players[getRandomInt(0, this.numPlayers)].publicId);
+    this.setTurn(this.players[getRandomInt(0, this.numPlayers - 1)].publicId);
   }
 
   public getTeams() {
@@ -135,7 +135,7 @@ export default class Game {
 
   private verifySevenCard(card: Card) {
     if (card.naipe === this.trump && card.order === 8) {
-      if (this.turnPlay === 4) {
+      if (this.turnPlay === this.numPlayers - 1) {
         throw new Error(
           "A 7 do trunfo não pode ser a última carta jogada na rodada."
         );
@@ -187,6 +187,7 @@ export default class Game {
     this.verifyTurnCardWin({ ...card, playerId: player.id });
 
     this.numberOfPlays++;
+    this.turnPlay++;
 
     const playerIndex = this.players.findIndex((p) => p.id === playerId);
     const nextPlayer = this.players[playerIndex + 1] || this.players[0];
@@ -218,6 +219,11 @@ export default class Game {
     winner.addPoints(points);
     this.setTurn(winner.publicId);
     this.turnCardWin = null;
+    this.turnPlay = 0;
+
+    for (const player of this.players) {
+      player.actualMove = null;
+    }
   }
 
   private buyCards() {
